@@ -14,10 +14,10 @@ document.getElementById("get").addEventListener("click", async () => {
     console.log(bolCreateDeck);
   //カード16枚ドロー
   //https://deckofcardsapi.com/api/deck/<<deck_id>>/draw/?count=
-  let draw1 = await fetch(apiUrl + "/deck/" + deckId + "/draw/?count=16");
+  let draw1 = await fetch(apiUrl + "/deck/" + deckId + "/draw/?count=52");
   const card = await draw1.json();
   let createAria;
-  for(let i = 0;i<4;i++){
+  for(let i = 0;i<13;i++){
     for(let x=0;x<4;x++){
       let y = i*4 + x;
       const cardImg = card.cards[y].image;
