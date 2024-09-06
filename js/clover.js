@@ -1,6 +1,25 @@
 const apiUrl = "https://deckofcardsapi.com/api/";
 //共通処理用変数
 let cardNumber = 0;
+//座標別判定用
+let x1y1 = Boolean(false);
+let x1y2 = Boolean(false);
+let x1y3 = Boolean(false);
+let x1y4 = Boolean(false);
+let x2y1 = Boolean(false);
+let x2y2 = Boolean(false);
+let x2y3 = Boolean(false);
+let x2y4 = Boolean(false);
+let x3y1 = Boolean(false);
+let x3y2 = Boolean(false);
+let x3y3 = Boolean(false);
+let x3y4 = Boolean(false);
+let x4y1 = Boolean(false);
+let x4y2 = Boolean(false);
+let x4y3 = Boolean(false);
+let x4y4 = Boolean(false);
+
+//カード別判定用
 let JACK = Boolean(false);
 let QUEEN = Boolean(false);
 let KING = Boolean(false);
