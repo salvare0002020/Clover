@@ -1,25 +1,29 @@
 const apiUrl = "https://deckofcardsapi.com/api/";
 //共通処理用変数
+let deckId;
 let cardNumber = 0;
 //座標別判定用
-let x1y1 = Boolean(false);
-let x1y2 = Boolean(false);
-let x1y3 = Boolean(false);
-let x1y4 = Boolean(false);
-let x2y1 = Boolean(false);
-let x2y2 = Boolean(false);
-let x2y3 = Boolean(false);
-let x2y4 = Boolean(false);
-let x3y1 = Boolean(false);
-let x3y2 = Boolean(false);
-let x3y3 = Boolean(false);
-let x3y4 = Boolean(false);
-let x4y1 = Boolean(false);
-let x4y2 = Boolean(false);
-let x4y3 = Boolean(false);
-let x4y4 = Boolean(false);
+  //true格納用配列
+  let changedPoints =[[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,false]];
+  // 選択状態のカードの座標
+  let truePointsX = [];
+  let truePointsY = [];
+  let imgID = [];
+//クリック済みの種類判別用
+  //マーク判別用
+    //null → 未選択状態
+    //number →　１～９のカードのみ選択中
+    //String →　JACK,QUEEN,KINGのカードのみ選択中
+let selectedCardSuit;
+  //1~9 or other判別用
+let selectedCardType;
+  //選択済み状態のカードの数
+let countSelectedCard =0;
 
 //カード別判定用
+  //直前にクリックしたカードの種類
+let cardType;
+  //特定のカード選択状況
 let JACK = Boolean(false);
 let QUEEN = Boolean(false);
 let KING = Boolean(false);
@@ -32,30 +36,31 @@ document.addEventListener('DOMContentLoaded', function() {
 //ボタンをクリックした際に初期セットアップ実行
 let bolCreateDeck = Boolean (false);
 document.getElementById("get").addEventListener("click", async () => {
-  console.log(bolCreateDeck);
   if(bolCreateDeck == false){
     setUp();
   }
 });
 
-//カードをクリックした際に処理を実行
+//カードをクリックした際に複数処理を実行
 function selectCard(divId) {
-  console.log(divId + " : cardをクリックしました");
-  
   // カードの座標を取得
   let cardXY = document.getElementById(divId);
-  
+
   // カードの値を取得
     //cardXYの子要素のなかからimgタグを指定
   let cardElement = cardXY.getElementsByTagName("img")[0];
-    //cardElementのクラスの一番最後を取得
+    //カードの値を取得 : cardElementのクラスの一番最後を取得
   let cardValue = cardElement.className.split(" ").pop();
+  //カードのマークを取得
+  let cardSuit = cardElement.className.split(" ")[0];
   
-  console.log("Card Value: " + cardValue);
+  //cardXYからクリックした座標が計算対象とみなされるか判定＆計算対象としてみなされる場合trueまたはfalseを代入
+  markedPoints(divId,cardSuit,cardValue);
 
   //カードの処理を行う
-  calValue(cardValue);
+  calValue(divId,cardValue);
 }
+
 //初期セットアップ用関数
 function setUp(){
   // 関数を実行
@@ -64,17 +69,13 @@ function setUp(){
   //関数"name"の定義
   let response;
   let deck;
-  let deckId;
-  console.log("setUp実行");
 
   async function name(params) {
-    response = await fetch(apiUrl + "deck/new/shuffle/?deck_count=1");
+    response = await fetch(apiUrl + "deck/new/shuffle/?cards=AS,2S,3S,4S,5S,6S,7S,8S,9S,JS,QS,KS,AD,2D,3D,4D,5D,6D,7D,8D,9D,JD,QD,KD,AC,2C,3C,4C,5C,6C,7C,8C,9C,JC,QC,KC,AH,2H,3H,4H,5H,6H,7H,8H,9H,JH,QH,KH");
     deck = await response.json();
-    console.log(deck);
     deckId = deck.deck_id;
     console.log(deckId);
     bolCreateDeck = true;
-    console.log(bolCreateDeck);
     
     // カード16枚ドロー
     let draw1 = await fetch(apiUrl + "/deck/" + deckId + "/draw/?count=16");
@@ -91,34 +92,198 @@ function setUp(){
         image.src = cardImg;
         image.className = cardSuit + " " + "card" + " " + cardValue;
         
-        console.log(y + 1);
         createAria = document.getElementById(y + 1);
         createAria.appendChild(image);
       }
       bolCreateDeck = true;
-      console.log(bolCreateDeck); 
     }
   }
 }
 
-function calValue(cardValue){
+//完成済み
+//selectCard()から呼び出し : 計算処理を行う
+function calValue(divId,cardValue){
   console.log("calValue実行開始 : " + cardValue);
-  if(cardValue == "2" ||cardValue == "3" ||cardValue == "4" ||cardValue == "5" ||cardValue == "6" ||cardValue == "7" ||cardValue == "8" ||cardValue == "9"){
-    let number = Number(cardValue);
-    cardNumber += number;
-  }else if(cardValue == "JACK" || cardValue == "QUEEN" || cardValue == "KING"){
-    if(cardValue == "JACK"){
-      JACK = true;
-      console.log("JACK : " + JACK);
-    }else if(cardValue == "QUEEN"){
-      QUEEN = true;
-      console.log("QUEEN : " + QUEEN);
-    }else{
-      KING = true;
-      console.log("KING : " + KING);
-    }
-  }else if(cardValue == "ACE"){
-    cardNumber += 1;
+  //直前にクリックした画像の座標を取得
+  let xy = Number(divId);
+
+  let clickingX = xy % 4;
+  let clickingY = Math.ceil(xy / 4)-1;
+  if(clickingX == 0){
+    clickingX = 4;
   }
-  console.log(cardNumber);
+  clickingX -= 1;
+
+  if(changedPoints[clickingX][clickingY] == true){
+    //選択状態のとき
+    if(cardValue == "2" ||cardValue == "3" ||cardValue == "4" ||cardValue == "5" ||cardValue == "6" ||cardValue == "7" ||cardValue == "8" ||cardValue == "9" ||cardValue == "10"){
+      let number = Number(cardValue);
+      cardNumber += number;
+    }else if(cardValue == "ACE"){
+      cardNumber += 1;
+    }
+  
+    if(cardNumber == 0){
+      if(cardValue == "JACK" || cardValue == "QUEEN" || cardValue == "KING"){
+        if(cardValue == "JACK"){
+          JACK = true;
+        }else if(cardValue == "QUEEN"){
+          QUEEN = true;
+        }else{
+          KING = true;
+        }
+      }
+    }else{
+      console.log("cardnumberが０でないためJACK , QUEEN , KINGは選択できません");
+    }
+  }else{
+    //選択状態じゃないとき
+    if(cardValue == "2" ||cardValue == "3" ||cardValue == "4" ||cardValue == "5" ||cardValue == "6" ||cardValue == "7" ||cardValue == "8" ||cardValue == "9" ||cardValue == "10"){
+      let number = Number(cardValue);
+      cardNumber -= number;
+    }else if(cardValue == "ACE"){
+      cardNumber -= 1;
+    }
+  
+    if(cardNumber == 0){
+      if(cardValue == "JACK" || cardValue == "QUEEN" || cardValue == "KING"){
+        if(cardValue == "JACK"){
+          JACK = false;
+        }else if(cardValue == "QUEEN"){
+          QUEEN = false;
+        }else{
+          KING = false;
+        }
+      }
+    }else{
+      console.log("cardnumberが０でないためJACK , QUEEN , KINGは選択できません");
+    }
+  }
+
+  console.log("JACK : "+JACK);
+  console.log("QUEEN : "+QUEEN);
+  console.log("KING : "+KING);
+  console.log("countSelectedCard : "+countSelectedCard);
+  console.log("選択済みの数値の合計 : "+cardNumber);
+  console.log("changedPoints["+clickingX+"]["+clickingY+"] : "+changedPoints[clickingX][clickingY]);
+
+  if(cardNumber == 15 || JACK == true && QUEEN == true && KING == true){
+    console.log("条件を満たしたため選択状態のカードの消去を行います");
+    deleteCard();
+  }
+}
+
+//完成済み
+//selectCard()から呼び出し : 選択状態かどうかの判定を行う
+function markedPoints(divId,cardSuit,cardValue) {
+  //座標の調節
+  let xy = Number(divId);
+  let clickingX = xy % 4;
+  let clickingY = Math.ceil(xy / 4)-1;
+  if(clickingX == 0){
+    clickingX = 4;
+  }
+  clickingX -= 1;
+
+  //クリック済みの座標格納
+  if (selectedCardSuit == null) {
+    //マークがまだ選択されていないとき
+    selectedCardSuit = cardSuit;
+  }
+  if(selectedCardType == null){
+    if(cardValue == "ACE" || cardValue == "2" || cardValue == "3" || cardValue == "4" || cardValue == "5" || cardValue == "6" || cardValue == "7" || cardValue == "8" || cardValue == "9"|| cardValue == "10"){
+      selectedCardType = "number";
+    }else{
+      selectedCardType = "String";
+    }
+  }
+  console.log("selectedCardType : "+selectedCardType);
+  
+  //直前にクリックしたカードの種類
+  if(cardValue == "ACE" || cardValue == "2" || cardValue == "3" || cardValue == "4" || cardValue == "5" || cardValue == "6" || cardValue == "7" || cardValue == "8" || cardValue == "9"|| cardValue == "10"){
+    cardType = "number";
+  }else{
+    cardType = "String";
+  }
+
+  console.log("cardType : "+cardType);
+
+  if(cardType == selectedCardType){
+    if (selectedCardSuit == cardSuit) {
+      //マークが同じとき(truePointsに登録)
+      if (changedPoints[clickingX][clickingY] == false) {
+        changedPoints[clickingX][clickingY] = true;
+        imgID.push(divId);
+        truePointsX.push(clickingX);
+        truePointsY.push(clickingY);
+        countSelectedCard += 1;
+      } else {
+        //(truePointsから登録解除)
+        changedPoints[clickingX][clickingY] = false;
+        imgID.pop(divId);
+        truePointsX.pop(clickingX);
+        truePointsY.pop(clickingY);
+        countSelectedCard -= 1;
+      }
+
+      //truePoint確認
+      for(let i=0;i<truePointsX.length;i++){
+        console.log("truePointsX : "+truePointsX[i]);
+        console.log("truePointsY : "+truePointsY[i]);
+        console.log("imgID : "+imgID);
+      }
+    }
+  }
+
+  if(countSelectedCard == 0){
+    //選択済み状態のカードの数が0のとき
+    selectedCardType = null;
+    selectedCardSuit = null;
+  }
+}
+
+async function deleteCard() {
+  
+  // 判定のリセット
+  selectedCardType = null;
+  selectedCardSuit = null;
+  cardNumber = 0;
+  JACK = false;
+  QUEEN = false;
+  KING = false;
+
+  // 選択状態の枚数分カードを引き、入れ替える
+  let reDraw = await fetch(apiUrl + "deck/" + deckId + "/draw/?count=" + countSelectedCard);
+  const card = await reDraw.json(); // awaitを追加
+
+  console.log(card);
+  if (!card.cards) {
+    console.error("カードデータが取得できませんでした。");
+    return;
+  }
+
+  for (let x = 0; x < countSelectedCard; x++) {
+    // 新しいカードの情報を取得
+    const cardImg = card.cards[x].image;
+    const cardSuit = card.cards[x].suit;
+    const cardValue = card.cards[x].value;
+    console.log(cardImg);
+
+    // idを取得
+    console.log(`truePointsX[${x}]: ${truePointsX[x]}, truePointsY[${x}]: ${truePointsY[x]}, imgID: ${imgID[x]}`);
+    let reInputIMG = document.getElementById(imgID[x]);
+    if (reInputIMG) {
+      let imgElement = reInputIMG.getElementsByTagName("img")[0];
+      imgElement.src = cardImg;
+      imgElement.className = cardSuit + " " + "card" + " " + cardValue;
+      console.log("変換進捗 : "+(x+1)+"/"+(countSelectedCard));
+    } else {
+      console.error("ID " + imgID[x] + " の要素が見つかりませんでした。");
+    }
+  }
+  imgID = [];
+  truePointsX = [];
+  truePointsY = [];
+  changedPoints =[[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,false]];
+  countSelectedCard = 0;
 }
