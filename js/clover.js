@@ -34,12 +34,46 @@ document.addEventListener('DOMContentLoaded', function() {
   setUp();
 });
 
-//ボタンをクリックした際に初期セットアップ実行
+//ボタンをクリックした際にニューゲーム実行
 let bolCreateDeck = Boolean (false);
 document.getElementById("get").addEventListener("click", async () => {
   if(bolCreateDeck == false){
     setUp();
-  }
+  }else{
+    console.log("進捗をリセット");
+    response = await fetch(apiUrl + "deck/new/shuffle/?cards=AS,2S,3S,4S,5S,6S,7S,8S,9S,JS,QS,KS,AD,2D,3D,4D,5D,6D,7D,8D,9D,JD,QD,KD,AC,2C,3C,4C,5C,6C,7C,8C,9C,JC,QC,KC,AH,2H,3H,4H,5H,6H,7H,8H,9H,JH,QH,KH");
+    deck = await response.json();
+    deckId = deck.deck_id;
+    console.log(deckId);
+    bolCreateDeck = true;
+    
+    // カード16枚ドロー
+    let draw1 = await fetch(apiUrl + "/deck/" + deckId + "/draw/?count=16");
+    const card = await draw1.json();
+    let createAria;
+    console.log(card);
+    for(let i = 0; i < 16; i++){
+        const cardImg = card.cards[i].image;
+        const cardSuit = card.cards[i].suit;
+        const cardValue = card.cards[i].value;
+        console.log(i);
+        console.log("cardImg : "+cardImg);
+        console.log("cardSuit : "+cardSuit);
+        console.log("cardValue : "+cardValue);
+        
+        let imgID = document.getElementById(i+1);
+        let img = imgID.getElementsByTagName("img")[0];
+        
+        console.log("img : "+img);
+        img.src=cardImg;
+        img.className = cardSuit + " " + "card" + " " + cardValue;
+
+        // imgElement.src = cardImg;
+        // imgElement.className = cardSuit + " " + "card" + " " + cardValue;
+      }
+      bolCreateDeck = true;
+    }
+  
 });
 
 //カードをクリックした際に複数処理を実行
@@ -135,7 +169,7 @@ function calValue(divId,cardValue){
         }
       }
     }else{
-      console.log("cardnumberが０でないためJACK , QUEEN , KINGは選択できません");
+      console.log("cardnumberが0でないためJACK , QUEEN , KINGは選択できません");
     }
   }else{
     //選択状態じゃないとき
@@ -157,7 +191,7 @@ function calValue(divId,cardValue){
         }
       }
     }else{
-      console.log("cardnumberが０でないためJACK , QUEEN , KINGは選択できません");
+      console.log("cardnumberが0でないためJACK , QUEEN , KINGは選択できません");
     }
   }
 
