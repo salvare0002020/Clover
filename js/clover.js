@@ -2,6 +2,7 @@ const apiUrl = "https://deckofcardsapi.com/api/";
 //共通処理用変数
 let deckId;
 let cardNumber = 0;
+let deckCount = 48;
 //座標別判定用
   //true格納用配列
   let changedPoints =[[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,false]];
@@ -252,8 +253,15 @@ async function deleteCard() {
   QUEEN = false;
   KING = false;
 
+  //ドロー枚数の調整
+  let reDraw;
+  deckCount-= countSelectedCard;
+  if(countSelectedCard<deckCount){
+    reDraw = await fetch(apiUrl + "deck/" + deckId + "/draw/?count=" + countSelectedCard);
+  }else{
+    reDraw = await fetch(apiUrl + "deck/" + deckId + "/draw/?count=" + deckCount);
+  }
   // 選択状態の枚数分カードを引き、入れ替える
-  let reDraw = await fetch(apiUrl + "deck/" + deckId + "/draw/?count=" + countSelectedCard);
   const card = await reDraw.json(); // awaitを追加
 
   console.log(card);
@@ -261,25 +269,48 @@ async function deleteCard() {
     console.error("カードデータが取得できませんでした。");
     return;
   }
-
   for (let x = 0; x < countSelectedCard; x++) {
-    // 新しいカードの情報を取得
-    const cardImg = card.cards[x].image;
-    const cardSuit = card.cards[x].suit;
-    const cardValue = card.cards[x].value;
-    console.log(cardImg);
+    //取得が成功した場合
+    if(card.success == true){
+      console.log("カード取得成功");
+      // 新しいカードの情報を取得
+      const cardImg = card.cards[x].image;
+      const cardSuit = card.cards[x].suit;
+      const cardValue = card.cards[x].value;
+      console.log(cardImg);
 
-    // idを取得
-    console.log(`truePointsX[${x}]: ${truePointsX[x]}, truePointsY[${x}]: ${truePointsY[x]}, imgID: ${imgID[x]}`);
-    let reInputIMG = document.getElementById(imgID[x]);
-    if (reInputIMG) {
-      let imgElement = reInputIMG.getElementsByTagName("img")[0];
-      imgElement.src = cardImg;
-      imgElement.className = cardSuit + " " + "card" + " " + cardValue;
-      console.log("変換進捗 : "+(x+1)+"/"+(countSelectedCard));
-    } else {
-      console.error("ID " + imgID[x] + " の要素が見つかりませんでした。");
+      // idを取得
+      console.log(`truePointsX[${x}]: ${truePointsX[x]}, truePointsY[${x}]: ${truePointsY[x]}, imgID: ${imgID[x]}`);
+      let reInputIMG = document.getElementById(imgID[x]);
+      if (reInputIMG) {
+        let imgElement = reInputIMG.getElementsByTagName("img")[0];
+        imgElement.src = cardImg;
+        imgElement.className = cardSuit + " " + "card" + " " + cardValue;
+        console.log("変換進捗 : "+(x+1)+"/"+(countSelectedCard));
+      } else {
+        console.error("ID " + imgID[x] + " の要素が見つかりませんでした。");
+      }
+    }else{
+      console.error(card.error);
+      const cardImg = card.cards[x].image;
+      const cardSuit = card.cards[x].suit;
+      const cardValue = card.cards[x].value;
+      console.log(cardImg);
+
+      // idを取得
+      console.log(`truePointsX[${x}]: ${truePointsX[x]}, truePointsY[${x}]: ${truePointsY[x]}, imgID: ${imgID[x]}`);
+      let reInputIMG = document.getElementById(imgID[x]);
+      if (reInputIMG) {
+        let imgElement = reInputIMG.getElementsByTagName("img")[0];
+        imgElement.src = "https://deckofcardsapi.com/static/img/back.png";
+        imgElement.className = cardSuit + " " + "card" + " " + cardValue;
+        console.log("変換進捗 : "+(x+1)+"/"+(countSelectedCard));
+      } else {
+        console.error("ID " + imgID[x] + " の要素が見つかりませんでした。");
+      }
     }
+    
+    
   }
   imgID = [];
   truePointsX = [];
