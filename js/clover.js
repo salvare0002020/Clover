@@ -142,7 +142,7 @@ function calValue(divId,cardValue,cardSuit){
     clickingX = 4;
   }
   clickingX -= 1;
-
+  console.log("計算実行直前のcalValueの値" + cardValue);
   if(changedPoints[clickingX][clickingY] == true){
     //選択状態のとき
     if(cardValue == "2" ||cardValue == "3" ||cardValue == "4" ||cardValue == "5" ||cardValue == "6" ||cardValue == "7" ||cardValue == "8" ||cardValue == "9" ||cardValue == "10"){
@@ -172,7 +172,7 @@ function calValue(divId,cardValue,cardSuit){
       if(selectedCardSuit == cardSuit && deforCalNumber <= 15){
         cardNumber -= number;
       }
-    }else if(cardValue == "ACE"){
+    }else if(cardValue == "ACE" && cardNumber !=0){
       cardNumber -= 1;
     }
   
@@ -224,6 +224,9 @@ function markedPoints(divId,cardSuit,cardValue) {
   if(selectedCardType == null){
     if(cardValue == "ACE" || cardValue == "2" || cardValue == "3" || cardValue == "4" || cardValue == "5" || cardValue == "6" || cardValue == "7" || cardValue == "8" || cardValue == "9"|| cardValue == "10"){
       selectedCardType = "number";
+      if(cardValue == "ACE"){
+        cardValue =Number(1);
+      }
     }else{
       selectedCardType = "String";
     }
@@ -232,6 +235,9 @@ function markedPoints(divId,cardSuit,cardValue) {
   //直前にクリックしたカードの種類
   if(cardValue == "ACE" || cardValue == "2" || cardValue == "3" || cardValue == "4" || cardValue == "5" || cardValue == "6" || cardValue == "7" || cardValue == "8" || cardValue == "9"|| cardValue == "10"){
     cardType = "number";
+    if(cardValue == "ACE"){
+      cardValue =Number(1);
+    }
   }else{
     cardType = "String";
   }
