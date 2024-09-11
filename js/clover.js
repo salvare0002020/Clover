@@ -3,14 +3,15 @@ const apiUrl = "https://deckofcardsapi.com/api/";
 let deckId;
 let cardNumber = 0;
 let deckCount = 48;
+let deck =deckCount-16;
 let deforCalNumber;
 let isDeckZero = Boolean(false);
 //座標別判定用
   //true格納用配列
   let changedPoints =[[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,false]];
-//   let changedPoints =[[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,false]
-//   ,[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,false]
-//   ,[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,false]
+//   let changedPoints =[[false,false,false,false,false,false,false,false,false,false,false,false]
+//   ,[false,false,false,false,false,false,false,false,false,false,false,false]
+//   ,[false,false,false,false,false,false,false,false,false,false,false,false]
 // ];
   // 選択状態のカードの座標
   let truePointsX = [];
@@ -26,7 +27,8 @@ let selectedCardSuit;
 let selectedCardType;
   //選択済み状態のカードの数
 let countSelectedCard =0;
-
+//JACK , QUEEN , KINGの枚数
+let countSelectedString=0;
 //カード別判定用
   //直前にクリックしたカードの種類
 let cardType;
@@ -54,6 +56,7 @@ document.getElementById("get").addEventListener("click", async () => {
     
     // カード16枚ドロー
     let draw1 = await fetch(apiUrl + "/deck/" + deckId + "/draw/?count=16");
+    // let draw1 = await fetch(apiUrl + "/deck/" + deckId + "/draw/?count=48");
     const card = await draw1.json();
     let createAria;
     for(let i = 0; i < 16; i++){
@@ -110,6 +113,7 @@ function setUp(){
     
     // カード16枚ドロー
     let draw1 = await fetch(apiUrl + "/deck/" + deckId + "/draw/?count=16");
+    // let draw1 = await fetch(apiUrl + "/deck/" + deckId + "/draw/?count=48");
     const card = await draw1.json();
     console.log(card);
     let createAria;
@@ -154,13 +158,11 @@ function calValue(divId,cardValue,cardSuit){
   
     if(cardNumber == 0){
       if(cardValue == "JACK" || cardValue == "QUEEN" || cardValue == "KING"){
-        console.log("テスト");
         if(cardValue == "JACK"){
           JACK = true;
         }else if(cardValue == "QUEEN"){
           QUEEN = true;
         }else{
-          console.log("テスト");
           KING = true;
         }
       }
@@ -178,13 +180,11 @@ function calValue(divId,cardValue,cardSuit){
   
     if(cardNumber == 0){
       if(cardValue == "JACK" || cardValue == "QUEEN" || cardValue == "KING"){
-        console.log("テスト");
         if(cardValue == "JACK"){
           JACK = false;
         }else if(cardValue == "QUEEN"){
           QUEEN = false;
         }else{
-          console.log("テスト");
           KING = false;
         }
       }
@@ -251,8 +251,6 @@ function markedPoints(divId,cardSuit,cardValue) {
   if(cardType == selectedCardType){
     if (selectedCardSuit == cardSuit) {
       //マークが同じとき(truePointsに登録)
-      // changedPoints[clickingX][clickingY] == false && cardType == "number" && isNumber <= 15 || changedPoints[clickingX][clickingY] == false && cardType == "String"
-      // changedPoints[clickingX][clickingY] == false || changedPoints[clickingX][clickingY] == false && cardType == "String"
       if (changedPoints[clickingX][clickingY] == false && cardType == "number" && deforCalNumber <= 15 || changedPoints[clickingX][clickingY] == false && cardType == "String") {
         console.log("登録処理実行");
         changedPoints[clickingX][clickingY] = true;
@@ -260,7 +258,11 @@ function markedPoints(divId,cardSuit,cardValue) {
         truePointsX.push(clickingX);
         truePointsY.push(clickingY);
         countSelectedCard += 1;
-      } else if(changedPoints[clickingX][clickingY] == true && cardType == "number" && deforCalNumber < 15 ||changedPoints[clickingX][clickingY] == true){
+        if(cardType == "String"){
+          countSelectedString +=1;
+          console.log("countSelectedString : "+Number(countSelectedString));
+        }
+      } else if(changedPoints[clickingX][clickingY] == true && cardType == "number" && deforCalNumber < 15 ||changedPoints[clickingX][clickingY] == true && cardType == "String"){
         //(truePointsから登録解除)
         console.log("登録解除処理実行");
         changedPoints[clickingX][clickingY] = false;
@@ -268,6 +270,10 @@ function markedPoints(divId,cardSuit,cardValue) {
         truePointsX.pop(clickingX);
         truePointsY.pop(clickingY);
         countSelectedCard -= 1;
+        if(cardType == "String"){
+          countSelectedString -=1;
+          console.log("countSelectedString : "+countSelectedString);
+        }
       }else{
         console.log("値が15以上のためスキップ");
       }
@@ -287,6 +293,7 @@ async function deleteCard() {
   let reDraw;
   let card;
   deckCount-= countSelectedCard;
+  deck= deck -countSelectedCard;
   if(countSelectedCard<=deckCount){
     //選択状態のカード枚数 < デッキ枚数
     reDraw = await fetch(apiUrl + "deck/" + deckId + "/draw/?count=" + countSelectedCard);
@@ -355,7 +362,8 @@ async function deleteCard() {
       }
     }
   }
-    console.log("残り山札 : "+deckCount);
+    console.log("残り枚数 : "+deckCount);
+    console.log("残り山札 : "+deck);
     if(deckCount == 0){
       console.log("clear!");
     }
@@ -375,10 +383,13 @@ function resetCount(){
   truePointsX = [];
   truePointsY = [];
   changedPoints =[[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,false]];
-//   changedPoints =[[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,false]
-//   ,[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,false]
-//   ,[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,false]
+//   changedPoints =[[false,false,false,false,false,false,false,false,false,false,false,false]
+//   ,[false,false,false,false,false,false,false,false,false,false,false,false]
+//   ,[false,false,false,false,false,false,false,false,false,false,false,false]
 // ];
   deforCalNumber = 0;
   countSelectedCard = 0;
 }
+
+//右クリック禁止
+document.oncontextmenu = function () {return false;}

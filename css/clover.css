@@ -2,3 +2,14 @@
 div.row{
     display:flex;
 }
+
+img{
+    /* PCの右クリック禁止 */
+    pointer-events: none;
+    /* SPの長押し禁止 */
+    -webkit-touch-callout:none;
+    -webkit-user-select:none;
+    -moz-touch-callout:none;
+    -moz-user-select:none;
+    user-select:none;
+}

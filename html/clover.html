@@ -6,8 +6,11 @@
     </head>
     <main onload="proc();">
         <button id="get">createDeck</button>
-        <div>
-
+        <div id="deck">
+            <img src="https://deckofcardsapi.com/static/img/back.png">
+            <div id="deckInfo">
+                <div>残り枚数32枚</div>
+            </div>
         </div>
         <div id="play">
             <div class="row">
@@ -34,7 +37,7 @@
                 <div id="15" onclick="selectCard(15)"></div>
                 <div id="16" onclick="selectCard(16)"></div><br>
             </div>
-            <!-- <div class="row">
+            <div class="row">
                 <div id="17" onclick="selectCard(17)"></div>
                 <div id="18" onclick="selectCard(18)"></div>
                 <div id="19" onclick="selectCard(19)"></div>
@@ -81,7 +84,7 @@
                 <div id="46" onclick="selectCard(46)"></div>
                 <div id="47" onclick="selectCard(47)"></div>
                 <div id="48" onclick="selectCard(48)"></div><br>
-            </div> -->
+            </div>
         </div>
     </main>
     <script src="../js/clover.js"></script>
