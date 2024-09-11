@@ -362,6 +362,13 @@ async function deleteCard() {
       }
     }
   }
+
+  if(deck != 0){
+    //デッキの残り枚数表示更新
+    let catchDeck = document.getElementById("deckInfo");
+    console.log(catchDeck);
+    catchDeck.textContent='残り枚数 : '+deck+'枚';
+  }
     console.log("残り枚数 : "+deckCount);
     console.log("残り山札 : "+deck);
     if(deckCount == 0){
