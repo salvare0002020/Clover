@@ -222,6 +222,8 @@ function markedPoints(divId,cardSuit,cardValue) {
     //マークがまだ選択されていないとき
     selectedCardSuit = cardSuit;
   }
+
+  //カードタイプの出力
   if(selectedCardType == null){
     if(cardValue == "ACE" || cardValue == "2" || cardValue == "3" || cardValue == "4" || cardValue == "5" || cardValue == "6" || cardValue == "7" || cardValue == "8" || cardValue == "9"|| cardValue == "10"){
       selectedCardType = "number";
@@ -231,6 +233,7 @@ function markedPoints(divId,cardSuit,cardValue) {
     }else{
       selectedCardType = "String";
     }
+    console.log("selectedCardType : "+selectedCardType);
   }
   
   //直前にクリックしたカードの種類
@@ -277,6 +280,7 @@ function markedPoints(divId,cardSuit,cardValue) {
         }
       }else{
         console.log("値が15以上のためスキップ");
+        changedPoints[clickingX][clickingY] = false;
       }
     }
   }
@@ -410,6 +414,7 @@ if (inputDeletedCards) {
 }
 
 function resetCount(){
+  console.log("カウントリセット開始");
   // 判定のリセット
   selectedCardType = null;
   selectedCardSuit = null;
