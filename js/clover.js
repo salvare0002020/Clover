@@ -29,6 +29,7 @@ let selectedCardType;
 let countSelectedCard =0;
 //JACK , QUEEN , KINGの枚数
 let countSelectedString=0;
+let deletedCards = [];
 //カード別判定用
   //直前にクリックしたカードの種類
 let cardType;
@@ -205,7 +206,7 @@ function calValue(divId,cardValue,cardSuit){
 }
 
 //完成済み
-//selectCard()から呼び出し : 選択状態かどうかの判定を行う
+//selectCard()から呼び出し : 選択状態かどうかの判定と選択状態,非選択状態の入れ替えを行う
 function markedPoints(divId,cardSuit,cardValue) {
   //座標の調節
   let xy = Number(divId);
@@ -316,12 +317,14 @@ async function deleteCard() {
   for (let x = 0; x < countSelectedCard; x++) {
     console.log("変換進捗 : "+(x+1)+"/"+(countSelectedCard));
     //取得が成功した場合
-    if(deckCount - countSelectedCard == 0){
+    if(deckCount == countSelectedCard){
+      // デッキの残り枚数と選択状態のカードの枚数が同じ時
       // idを取得
       console.log(`truePointsX[${x}]: ${truePointsX[x]}, truePointsY[${x}]: ${truePointsY[x]}, imgID: ${imgID[x]}`);
       let reInputIMG = document.getElementById(imgID[x]);
       if (reInputIMG) {
         let imgElement = reInputIMG.getElementsByTagName("img")[0];
+        console.log("imgElement : "+imgElement.src);
         imgElement.src = "https://deckofcardsapi.com/static/img/back.png";
         imgElement.className = "none";
       }
@@ -339,6 +342,8 @@ async function deleteCard() {
       let reInputIMG = document.getElementById(imgID[x]);
       if (reInputIMG) {
         let imgElement = reInputIMG.getElementsByTagName("img")[0];
+        console.log("imgElement : "+imgElement.src);
+        deletedCards.push(imgElement.src);
         imgElement.src = cardImg;
         imgElement.className = cardSuit + " " + "card" + " " + cardValue;
         
@@ -369,6 +374,32 @@ async function deleteCard() {
     console.log(catchDeck);
     catchDeck.textContent='残り枚数 : '+deck+'枚';
   }
+  const inputDeletedCards = document.getElementById("getTrump");
+if (inputDeletedCards) {
+   // 既存のgetTrumpをクリア
+   if (inputDeletedCards) {
+    let imgElements = inputDeletedCards.getElementsByTagName("img");
+    while (imgElements.length > 0) {
+      console.log("imgElements[0]"+imgElements[0])
+      imgElements[0].remove();
+      // 再度取得して最新の状態に更新
+      imgElements = inputDeletedCards.getElementsByTagName("img");
+    }
+  } else {
+    console.error('Element with id "getTrump" not found');
+  }
+  
+   
+
+  for (let i = 0; i < deletedCards.length; i++) {
+    console.log(deletedCards[i]);
+    const image = document.createElement("img");
+        image.src = deletedCards[i];
+        inputDeletedCards.appendChild(image);
+  }
+} else {
+  console.error('Element with id "getTrump" not found');
+}
     console.log("残り枚数 : "+deckCount);
     console.log("残り山札 : "+deck);
     if(deckCount == 0){
@@ -396,6 +427,7 @@ function resetCount(){
 // ];
   deforCalNumber = 0;
   countSelectedCard = 0;
+  deletedCards = [];
 }
 
 //右クリック禁止
