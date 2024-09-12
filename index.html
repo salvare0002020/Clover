@@ -14,4 +14,152 @@
             <button class="start" onclick="location.href='./clover.html'" id="get">START</button>
         </div>
     </main>
-    <script src="/js/clover.js"></script>
+    <style>
+        html {
+  background-color:#05a156; 
+}
+div.row{
+  display:flex;
+  justify-content: center;
+}
+.board{
+overflow: hidden;
+}
+/*山札の位置*/
+.box{
+float: left;
+margin-top: 15%;
+margin-left: 5%;
+}
+/*場の位置*/
+.box2{
+float: left;
+margin-left: 19%;
+margin-top: 3%;
+}
+.reset{
+  width: auto;
+  padding:0;
+  margin:0;
+  margin-left: 6%;
+  background:none;
+  border:0;
+  font-size:0;
+  line-height:0;
+  overflow:visible;
+  cursor:pointer;
+}
+
+img{
+  /* PCの右クリック禁止 */
+  pointer-events: none;
+  /* SPの長押し禁止 */
+  -webkit-touch-callout:none;
+  -webkit-user-select:none;
+  -moz-touch-callout:none;
+  -moz-user-select:none;
+  user-select:none;
+}
+.row {
+  margin-top: 0.5%;
+}
+/*card*/
+.btn {
+display: flex;
+align-items: center;
+justify-content: center;
+width: 90px;
+height: 110px;
+margin-left: 2em;
+padding: 4px;
+}
+.btn img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 画像をボタンのサイズにフィットさせる */
+}
+
+/*アニメーション*/
+.checkbox:checked+.btn {
+  position: relative;
+  border-radius: var(--border-radius);
+  padding: 4px;
+  outline: none;
+}
+
+.checkbox:checked+.btn .inner {
+  border-radius: 4px;
+}
+/*アニメーションのふち*/
+.checkbox:checked+.btn::before,
+.checkbox:checked+.btn::after {
+content: "";
+position: absolute;
+top: 0;
+left: 0;
+bottom: 0;
+right: 0;
+background: linear-gradient(
+  45deg,
+  #ff595e,
+  #ffca3a,
+  #ff6700
+);
+background-size: 400%;
+z-index: -1;
+animation: glow 20s linear infinite;/*アニメーションの内容*/
+width: 100%;
+border-radius: var(--border-radius);
+}
+
+.checkbox:checked+.btn::after {
+filter: blur(25px);
+transform: translate3d(0, 0, 0); /* For Safari */
+ 
+}
+/*アニメーションの詳細設定*/
+@keyframes glow {
+0% {
+  background-position: 0 0;
+}
+
+50% {
+  background-position: 100% 0;
+}
+
+100% {
+  background-position: 0 0;
+}
+}
+/*チェックボックス非表示*/
+.checkbox {
+  display: none;
+}
+h1{
+  font-size:100px;
+  
+}
+.dotgothic16-regular {
+  font-family: "DotGothic16", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  text-align:center;
+}
+.start{
+  width: 600px;
+  margin-top:100px;
+  padding:20px;
+  box-sizing: border-box;
+  border: 1px solid #68779a;
+  background: #fbfafa;
+  cursor: pointer;
+  font-size:40px;
+}
+.a{
+  text-align:center;
+}
+
+    </style>
+    <script>
+        
+    </script>
