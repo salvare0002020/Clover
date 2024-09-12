@@ -76,7 +76,7 @@ document.getElementById("get").addEventListener("click", async () => {
       }
       bolCreateDeck = true;
     }
-  
+    location.reload();
 });
 
 //カードをクリックした際に複数処理を実行
