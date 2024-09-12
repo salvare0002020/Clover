@@ -1,15 +1,111 @@
-
-div.row{
-    display:flex;
+/* 全体のレイアウト設定 */
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
 }
 
-img{
-    /* PCの右クリック禁止 */
+/* コンテナ設定 */
+.container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: auto; /* スクロールバーを表示 */
+}
+
+/* 左右のフィールドの設定 */
+.fields {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 10px;
+    flex: 1;
+}
+
+/* プレイエリアの設定 */
+#play {
+    flex: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* グリッドレイアウト設定 */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    width: 100%;
+    max-width: 600px; /* 最大幅を設定 */
+    height: auto;
+}
+
+/* 各カードのスタイル */
+.grid-container div {
+    background-color: #fff;
+    border: 1px solid #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    aspect-ratio: 1 / 1; /* 正方形の比率を保持 */
+}
+
+/* 画像のサイズ統一設定 */
+.grid-container div img{
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* 画像が枠に収まるように調整 */
+}
+.fields img {
+    width: 40%;
+    height: 40%;
+    object-fit: contain; /* 画像が枠に収まるように調整 */
+}
+
+/* ボタンのスタイル */
+.fields button {
+    width: 80px;
+    height: 70px;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    background: none;
+}
+
+/* ボタン内の画像調整 */
+.fields button img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* 画像がボタンのサイズにフィットするように調整 */
+}
+
+/* 画像のスタイル */
+img {
     pointer-events: none;
-    /* SPの長押し禁止 */
-    -webkit-touch-callout:none;
-    -webkit-user-select:none;
-    -moz-touch-callout:none;
-    -moz-user-select:none;
-    user-select:none;
+    user-select: none;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* 非表示のクリックボックス用スタイル */
+.nonClicked {
+    border: 5px solid #05a156;
+}
+
+.clicked {
+    border: 2px solid #ff6700;
+    padding: 5px;
+    background-color: cadetblue;
+}
+
+html {
+    background-color: #05a156;
 }
