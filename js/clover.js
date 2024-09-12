@@ -116,10 +116,8 @@ function setUp(){
     let draw1 = await fetch(apiUrl + "/deck/" + deckId + "/draw/?count=16");
     // let draw1 = await fetch(apiUrl + "/deck/" + deckId + "/draw/?count=48");
     const card = await draw1.json();
-    console.log(card);
     let createAria;
     for(let i = 0; i < 16; i++){
-        console.log(i);
         const cardImg = card.cards[i].image;
         const cardSuit = card.cards[i].suit;
         const cardValue = card.cards[i].value;
@@ -147,7 +145,6 @@ function calValue(divId,cardValue,cardSuit){
     clickingX = 4;
   }
   clickingX -= 1;
-  console.log("計算実行直前のcalValueの値" + cardValue);
   if(changedPoints[clickingX][clickingY] == true){
     //選択状態のとき
     if(cardValue == "2" ||cardValue == "3" ||cardValue == "4" ||cardValue == "5" ||cardValue == "6" ||cardValue == "7" ||cardValue == "8" ||cardValue == "9" ||cardValue == "10"){
@@ -195,9 +192,7 @@ function calValue(divId,cardValue,cardSuit){
   console.log("JACK : "+JACK);
   console.log("QUEEN : "+QUEEN);
   console.log("KING : "+KING);
-  console.log("countSelectedCard : "+countSelectedCard);
   console.log("選択済みの数値の合計 : "+cardNumber);
-  console.log("changedPoints["+clickingX+"]["+clickingY+"] : "+changedPoints[clickingX][clickingY]);
 
   if(cardNumber == 15 || JACK == true && QUEEN == true && KING == true){
     console.log("削除実行");  
@@ -233,7 +228,6 @@ function markedPoints(divId,cardSuit,cardValue) {
     }else{
       selectedCardType = "String";
     }
-    console.log("selectedCardType : "+selectedCardType);
   }
   
   //直前にクリックしたカードの種類
@@ -245,18 +239,13 @@ function markedPoints(divId,cardSuit,cardValue) {
   }else{
     cardType = "String";
   }
-  console.log("cardType : "+cardType);
-  console.log("cardNumber : " + cardNumber);
-  console.log("cardValue : "+ cardValue);
 
   deforCalNumber = Number(cardNumber) + Number(cardValue);
-  console.log(deforCalNumber);
 
   if(cardType == selectedCardType){
     if (selectedCardSuit == cardSuit) {
       //マークが同じとき(truePointsに登録)
       if (changedPoints[clickingX][clickingY] == false && cardType == "number" && deforCalNumber <= 15 || changedPoints[clickingX][clickingY] == false && cardType == "String") {
-        console.log("登録処理実行");
         changedPoints[clickingX][clickingY] = true;
         imgID.push(divId);
         truePointsX.push(clickingX);
@@ -268,7 +257,6 @@ function markedPoints(divId,cardSuit,cardValue) {
         }
       } else if(changedPoints[clickingX][clickingY] == true && cardType == "number" && deforCalNumber < 15 ||changedPoints[clickingX][clickingY] == true && cardType == "String"){
         //(truePointsから登録解除)
-        console.log("登録解除処理実行");
         changedPoints[clickingX][clickingY] = false;
         imgID.pop(divId);
         truePointsX.pop(clickingX);
@@ -294,124 +282,232 @@ function markedPoints(divId,cardSuit,cardValue) {
 }
 
 async function deleteCard() {
-  //ドロー枚数の調整
   let reDraw;
   let card;
-  deckCount-= countSelectedCard;
-  deck= deck -countSelectedCard;
-  if(countSelectedCard<=deckCount){
-    //選択状態のカード枚数 < デッキ枚数
-    reDraw = await fetch(apiUrl + "deck/" + deckId + "/draw/?count=" + countSelectedCard);
-    // 選択状態の枚数分カードを引き、入れ替える
-    card = await reDraw.json(); // awaitを追加
-  }else if(deckCount < countSelectedCard && deckCount==0){
-    //選択状態のカード枚数 >= デッキ枚数
-    if(deckCount != 0){
-      let requestDraw = deckCount - countSelectedCard;
-      reDraw = await fetch(apiUrl + "deck/" + deckId + "/draw/?count=" + requestDraw);
-      // 選択状態の枚数分カードを引き、入れ替える
-      card = await reDraw.json(); // awaitを追加
-    }else{
+  
+  deckCount -= countSelectedCard;
+  deck = Math.max(0, deck - countSelectedCard); // デッキが負の値にならないように調整
+  
+  try {
+    if (countSelectedCard <= deck) {
+      // 選択された枚数のカードをデッキからドロー
+      reDraw = await fetch(apiUrl + "deck/" + deckId + "/draw/?count=" + countSelectedCard);
+    } else if (deck < countSelectedCard && countSelectedCard <= deckCount) {
+      // デッキに残っている分だけカードをドロー
+      reDraw = await fetch(apiUrl + "deck/" + deckId + "/draw/?count=" + deck);
+    } else {
+      // デッキや場にカードがもうない場合
       isDeckZero = true;
       return;
     }
     
+    // レスポンスをパース
+    card = await reDraw.json();
+    
+    // 期待されるカード配列が存在するか確認
+    if (card && card.success && card.cards && card.cards.length > 0) {
+      for (let x = 0; x < countSelectedCard; x++) {
+        if (card.cards[x]) {
+          console.log(`カード ${x + 1}/${countSelectedCard} を処理中`);
+          const cardImg = card.cards[x].image;
+          const cardSuit = card.cards[x].suit;
+          const cardValue = card.cards[x].value;
+          
+          // カード情報をログに出力
+          console.log(`cardImg: ${cardImg}, cardSuit: ${cardSuit}, cardValue: ${cardValue}`);
+          
+          // DOM内のカード画像を更新
+          let reInputIMG = document.getElementById(imgID[x]);
+          if (reInputIMG) {
+            let imgElement = reInputIMG.getElementsByTagName("img")[0];
+            deletedCards.push(imgElement.src);
+            imgElement.src = cardImg;
+            imgElement.className = `${cardSuit} card ${cardValue}`;
+          } else {
+            console.error(`ID ${imgID[x]} の要素が見つかりませんでした。`);
+          }
+        } else {
+          console.warn(`インデックス ${x} のカードが見つかりませんでした。`);
+        }
+      }
+    } else {
+      // console.error("カードの取得に失敗したか、予期しないレスポンス構造です:", card);
+      console.log("imgElement : "+imgElement.src);
+      imgElement.src = "https://deckofcardsapi.com/static/img/back.png";
+      imgElement.className = "none";
+    }
+  } catch (error) {
+    // console.error("カードのフェッチや処理中にエラーが発生しました:", error);
+    console.log("imgElement : "+imgElement.src);
+    imgElement.src = "https://deckofcardsapi.com/static/img/back.png";
+    imgElement.className = "none";
   }
 
-  for (let x = 0; x < countSelectedCard; x++) {
-    console.log("変換進捗 : "+(x+1)+"/"+(countSelectedCard));
-    //取得が成功した場合
-    if(deckCount == countSelectedCard){
-      // デッキの残り枚数と選択状態のカードの枚数が同じ時
-      // idを取得
-      console.log(`truePointsX[${x}]: ${truePointsX[x]}, truePointsY[${x}]: ${truePointsY[x]}, imgID: ${imgID[x]}`);
-      let reInputIMG = document.getElementById(imgID[x]);
-      if (reInputIMG) {
-        let imgElement = reInputIMG.getElementsByTagName("img")[0];
-        console.log("imgElement : "+imgElement.src);
-        imgElement.src = "https://deckofcardsapi.com/static/img/back.png";
-        imgElement.className = "none";
-      }
-    }
-    if(card.success == true){
-      console.log("カード取得成功");
-      // 新しいカードの情報を取得
-      const cardImg = card.cards[x].image;
-      const cardSuit = card.cards[x].suit;
-      const cardValue = card.cards[x].value;
-      console.log(cardImg);
-
-      // idを取得
-      console.log(`truePointsX[${x}]: ${truePointsX[x]}, truePointsY[${x}]: ${truePointsY[x]}, imgID: ${imgID[x]}`);
-      let reInputIMG = document.getElementById(imgID[x]);
-      if (reInputIMG) {
-        let imgElement = reInputIMG.getElementsByTagName("img")[0];
-        console.log("imgElement : "+imgElement.src);
-        deletedCards.push(imgElement.src);
-        imgElement.src = cardImg;
-        imgElement.className = cardSuit + " " + "card" + " " + cardValue;
-        
-      } else {
-        console.error("ID " + imgID[x] + " の要素が見つかりませんでした。");
-      }
-    }else{
-      //取得失敗
-
-      // idを取得
-      console.log(`truePointsX[${x}]: ${truePointsX[x]}, truePointsY[${x}]: ${truePointsY[x]}, imgID: ${imgID[x]}`);
-      let reInputIMG = document.getElementById(imgID[x]);
-      if (reInputIMG) {
-        let imgElement = reInputIMG.getElementsByTagName("img")[0];
-        imgElement.src = "https://deckofcardsapi.com/static/img/back.png";
-        imgElement.className = "none";
-        
-      } else {
-        console.error(card.error);
-        console.error("ID " + imgID[x] + " の要素が見つかりませんでした。");
-      }
-    }
-  }
-
-  if(deck != 0){
-    //デッキの残り枚数表示更新
+  // デッキの残り枚数表示を更新
+  if (deck >= 0) {
     let catchDeck = document.getElementById("deckInfo");
-    console.log(catchDeck);
-    catchDeck.textContent='残り枚数 : '+deck+'枚';
+    if (catchDeck) {
+      catchDeck.textContent = `残り枚数 : ${deck}枚`;
+    }
   }
+
+  // 削除されたカードの表示を更新
   const inputDeletedCards = document.getElementById("getTrump");
-if (inputDeletedCards) {
-   // 既存のgetTrumpをクリア
-   if (inputDeletedCards) {
+  if (inputDeletedCards) {
     let imgElements = inputDeletedCards.getElementsByTagName("img");
     while (imgElements.length > 0) {
-      console.log("imgElements[0]"+imgElements[0])
       imgElements[0].remove();
-      // 再度取得して最新の状態に更新
       imgElements = inputDeletedCards.getElementsByTagName("img");
     }
+    
+    // 最近削除されたカードを表示
+    for (let i = 0; i < deletedCards.length; i++) {
+      const image = document.createElement("img");
+      image.src = deletedCards[i];
+      inputDeletedCards.appendChild(image);
+    }
   } else {
-    console.error('Element with id "getTrump" not found');
+    console.error('Element with id "getTrump" が見つかりませんでした。');
+    let imgElement = reInputIMG.getElementsByTagName("img")[0];
+          console.log("imgElement : "+imgElement.src);
+          imgElement.src = "https://deckofcardsapi.com/static/img/back.png";
+          imgElement.className = "none";
   }
+
+  console.log(`残りデッキ枚数: ${deckCount}`);
+  console.log(`残り山札: ${deck}`);
+  
+  if (deckCount === 0) {
+    console.log("クリア！");
+  }
+
+  resetCount();
+}
+
+
+// async function deleteCard() {
+//   //ドロー枚数の調整
+//   let reDraw;
+//   let card;
+//   deckCount-= countSelectedCard;
+//   if(0<deck - countSelectedCard){
+//     //引いたあとのデッキ枚数が1以上
+//     deck= deck -countSelectedCard;
+//   }else{
+//     deck=0
+//   }
+//   if(countSelectedCard<=deck){
+//     //選択したカードの数<=デッキの枚数 : 選択したカードの枚数分ドロー
+//     reDraw = await fetch(apiUrl + "deck/" + deckId + "/draw/?count=" + countSelectedCard);
+//   }else if(deck<countSelectedCard && countSelectedCard<=deckCount){
+//     //デッキの数<選択したカードの数<デッキ+場のカードの数 : デッキの数枚数分ドロー
+//     reDraw = await fetch(apiUrl + "deck/" + deckId + "/draw/?count=" + deck);
+//   }else{
+//     //デッキ+場のカードの数<=選択したカードの数(その他) : クリア表示
+//     isDeckZero = true;
+//     return;
+//   }
+//   card = await reDraw.json();
+  
+//   if(card.length !=0){
+//     for (let x = 0; x < countSelectedCard; x++) {
+//       console.log("変換進捗 : "+(x+1)+"/"+(countSelectedCard));
+//       //取得が成功した場合
+//       if(deckCount == countSelectedCard){
+//         // デッキの残り枚数と選択状態のカードの枚数が同じ時
+//         // idを取得
+//         console.log(`truePointsX[${x}]: ${truePointsX[x]}, truePointsY[${x}]: ${truePointsY[x]}, imgID: ${imgID[x]}`);
+//         let reInputIMG = document.getElementById(imgID[x]);
+//         if (reInputIMG) {
+//           //
+//           let imgElement = reInputIMG.getElementsByTagName("img")[0];
+//           console.log("imgElement : "+imgElement.src);
+//           imgElement.src = "https://deckofcardsapi.com/static/img/back.png";
+//           imgElement.className = "none";
+//         }
+//       }
+//       if(card.success == true){
+//         console.log("カード取得成功");
+//         // 新しいカードの情報を取得
+//         const cardImg = card.cards[x].image;
+//         const cardSuit = card.cards[x].suit;
+//         const cardValue = card.cards[x].value;
+//         console.log("cardImg"+cardImg);
+  
+//         // idを取得
+//         console.log(`truePointsX[${x}]: ${truePointsX[x]}, truePointsY[${x}]: ${truePointsY[x]}, imgID: ${imgID[x]}`);
+//         let reInputIMG = document.getElementById(imgID[x]);
+//         if (reInputIMG) {
+//           let imgElement = reInputIMG.getElementsByTagName("img")[0];
+//           console.log("imgElement : "+imgElement.src);
+//           deletedCards.push(imgElement.src);
+//           imgElement.src = cardImg;
+//           imgElement.className = cardSuit + " " + "card" + " " + cardValue;
+          
+//         } else {
+//           console.error("ID " + imgID[x] + " の要素が見つかりませんでした。");
+//         }
+//       }else{
+//         //取得失敗
+  
+//         // idを取得
+//         console.log(`truePointsX[${x}]: ${truePointsX[x]}, truePointsY[${x}]: ${truePointsY[x]}, imgID: ${imgID[x]}`);
+//         let reInputIMG = document.getElementById(imgID[x]);
+//         if (reInputIMG) {
+//           let imgElement = reInputIMG.getElementsByTagName("img")[0];
+//           imgElement.src = "https://deckofcardsapi.com/static/img/back.png";
+//           imgElement.className = "none";
+          
+//         } else {
+//           console.error(card.error);
+//           console.error("ID " + imgID[x] + " の要素が見つかりませんでした。");
+//         }
+//       }
+//     }
+//   }
+  
+
+//   if(0<=deck){
+//     //デッキの残り枚数表示更新
+//     let catchDeck = document.getElementById("deckInfo");
+//     console.log(catchDeck);
+//     catchDeck.textContent='残り枚数 : '+deck+'枚';
+//   }
+//   const inputDeletedCards = document.getElementById("getTrump");
+// if (inputDeletedCards) {
+//    // 既存のgetTrumpをクリア
+//    if (inputDeletedCards) {
+//     let imgElements = inputDeletedCards.getElementsByTagName("img");
+//     while (imgElements.length > 0) {
+//       console.log("imgElements[0]"+imgElements[0])
+//       imgElements[0].remove();
+//       // 再度取得して最新の状態に更新
+//       imgElements = inputDeletedCards.getElementsByTagName("img");
+//     }
+//   } else {
+//     console.error('Element with id "getTrump" not found');
+//   }
   
    
 
-  for (let i = 0; i < deletedCards.length; i++) {
-    console.log(deletedCards[i]);
-    const image = document.createElement("img");
-        image.src = deletedCards[i];
-        inputDeletedCards.appendChild(image);
-  }
-} else {
-  console.error('Element with id "getTrump" not found');
-}
-    console.log("残り枚数 : "+deckCount);
-    console.log("残り山札 : "+deck);
-    if(deckCount == 0){
-      console.log("clear!");
-    }
+//   for (let i = 0; i < deletedCards.length; i++) {
+//     //直前に消去したカードたちを表示
+//     console.log(deletedCards[i]);
+//     const image = document.createElement("img");
+//         image.src = deletedCards[i];
+//         inputDeletedCards.appendChild(image);
+//   }
+// } else {
+//   console.error('Element with id "getTrump" not found');
+// }
+//     console.log("残り枚数 : "+deckCount);
+//     console.log("残り山札 : "+deck);
+//     if(deckCount == 0){
+//       console.log("clear!");
+//     }
     
-   resetCount()
-}
+//    resetCount()
+// }
 
 function resetCount(){
   console.log("カウントリセット開始");
